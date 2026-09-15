@@ -1,4 +1,4 @@
-import ical from 'node-ical'
+import ical, { VEvent } from 'node-ical'
 
 interface ParsedTask {
   title: string
@@ -6,21 +6,21 @@ interface ParsedTask {
   moodle_uid: string
 }
 
+function isVEvent(e: unknown): e is VEvent {
+  return typeof e === 'object' && e !== null && (e as VEvent).type === 'VEVENT'
+}
+
 export function parseICSFeed(icsText: string): ParsedTask[] {
   const events = ical.parseICS(icsText)
-  const tasks: ParsedTask[] = []
 
-  for (const event of Object.values(events)) {
-    if (!event || event.type !== 'VEVENT') continue
-    const vevent = event as ical.VEvent
-    tasks.push({
-      title: vevent.summary ?? 'Untitled',
-      due_date: vevent.start ? new Date(vevent.start).toISOString() : null,
-      moodle_uid: vevent.uid ?? '',
-    })
-  }
+  const tasks: ParsedTask[] = Object.values(events)
+    .filter(isVEvent)
+    .map((e) => ({
+      title: e.summary ?? 'Untitled',
+      due_date: e.start ? new Date(e.start).toISOString() : null,
+      moodle_uid: e.uid ?? '',
+    }))
 
-  // Sort by moodle_uid for consistent ordering (parseICS uses UID as object key)
   tasks.sort((a, b) => a.moodle_uid.localeCompare(b.moodle_uid))
 
   return tasks
