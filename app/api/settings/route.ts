@@ -13,7 +13,11 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const { moodle_ics_url } = await req.json()
+  const body = await req.json()
+  if (!('moodle_ics_url' in body)) {
+    return NextResponse.json({ error: 'moodle_ics_url required' }, { status: 400 })
+  }
+  const { moodle_ics_url } = body
 
   const { data, error } = await supabase
     .from('settings')

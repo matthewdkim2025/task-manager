@@ -13,7 +13,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const { title, due_date } = await req.json()
-  if (!title) return NextResponse.json({ error: 'title required' }, { status: 400 })
+  if (!title?.trim()) return NextResponse.json({ error: 'title required' }, { status: 400 })
 
   const { data, error } = await supabase
     .from('tasks')
