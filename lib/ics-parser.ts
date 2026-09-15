@@ -11,11 +11,12 @@ export function parseICSFeed(icsText: string): ParsedTask[] {
   const tasks: ParsedTask[] = []
 
   for (const event of Object.values(events)) {
-    if (event.type !== 'VEVENT') continue
+    if (!event || event.type !== 'VEVENT') continue
+    const vevent = event as ical.VEvent
     tasks.push({
-      title: event.summary ?? 'Untitled',
-      due_date: event.start ? new Date(event.start).toISOString() : null,
-      moodle_uid: event.uid ?? '',
+      title: vevent.summary ?? 'Untitled',
+      due_date: vevent.start ? new Date(vevent.start).toISOString() : null,
+      moodle_uid: vevent.uid ?? '',
     })
   }
 
